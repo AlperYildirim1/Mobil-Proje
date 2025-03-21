@@ -1,7 +1,7 @@
 package com.example.mobilproje;
+
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -19,17 +19,22 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login); // Ekranı yüklemeden önce giriş kontrolü yapma!
+        setContentView(R.layout.activity_login);
 
-        // UI bileşenlerini başlat
+        // Initialize UI components
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         loginButton = findViewById(R.id.loginButton);
         registerButton = findViewById(R.id.registerButton);
         mAuth = FirebaseAuth.getInstance();
 
-        // Butonların onClickListener'larını burada tanımla
-        loginButton.setOnClickListener(v -> signInUser(emailEditText.getText().toString(), passwordEditText.getText().toString()));
+        // Set up button listeners
+        loginButton.setOnClickListener(v -> {
+            String email = emailEditText.getText().toString().trim();
+            String password = passwordEditText.getText().toString().trim();
+            signInUser(email, password);
+        });
+
         registerButton.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity(intent);
@@ -40,46 +45,48 @@ public class LoginActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        // Kullanıcı giriş yapmışsa doğrudan MainActivity'ye yönlendir
+        // If a user is already logged in with Firebase, go to SpotifyActivity
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
-            goToMainActivity();
+            goToSpotifyActivity();
         }
     }
 
     private void signInUser(String email, String password) {
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-
-        auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = auth.getCurrentUser();
-                        if (user != null && user.isEmailVerified()) {
-                            // Kullanıcı doğrulandıysa girişe izin ver
-                            goToMainActivity();
-
-                            Toast.makeText(getApplicationContext(),
-                                    "Giriş başarılı!", Toast.LENGTH_LONG).show();
-                            // Ana sayfaya yönlendirme işlemini burada yapabilirsin.
+        // Check for admin credentials first
+        if (email.equals("admin") && password.equals("admin")) {
+            Toast.makeText(getApplicationContext(), "Admin girişi başarılı!", Toast.LENGTH_LONG).show();
+            goToSpotifyActivity();
+        } else {
+            // Proceed with Firebase authentication for non-admin users
+            mAuth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            if (user != null && user.isEmailVerified()) {
+                                // User is verified, allow login
+                                Toast.makeText(getApplicationContext(),
+                                        "Giriş başarılı!", Toast.LENGTH_LONG).show();
+                                goToSpotifyActivity();
+                            } else {
+                                // Email not verified, sign out and notify
+                                mAuth.signOut();
+                                Toast.makeText(getApplicationContext(),
+                                        "Lütfen e-posta adresinizi doğrulayın ve tekrar giriş yapın.",
+                                        Toast.LENGTH_LONG).show();
+                            }
                         } else {
-                            // Email doğrulanmamışsa çıkış yap ve uyarı ver
-                            auth.signOut();
                             Toast.makeText(getApplicationContext(),
-                                    "Lütfen e-posta adresinizi doğrulayın ve tekrar giriş yapın.",
+                                    "Giriş başarısız: " + task.getException().getMessage(),
                                     Toast.LENGTH_LONG).show();
                         }
-                    } else {
-                        Toast.makeText(getApplicationContext(),
-                                "Giriş başarısız: " + task.getException().getMessage(),
-                                Toast.LENGTH_LONG).show();
-                    }
-                });
+                    });
+        }
     }
 
-
-    private void goToMainActivity() {
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+    private void goToSpotifyActivity() {
+        Intent intent = new Intent(LoginActivity.this, SpotifyActivity.class);
         startActivity(intent);
-        finish(); // Login ekranını kapat
+        finish(); // Close LoginActivity
     }
 }

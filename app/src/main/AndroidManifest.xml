@@ -13,8 +13,7 @@
         android:theme="@style/Theme.MobilProje"
         tools:targetApi="35">
 
-
-
+        <!-- Set LoginActivity as the default/launcher activity -->
         <activity
             android:name=".LoginActivity"
             android:exported="true">
@@ -23,10 +22,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity"
-            android:exported="true"/>
-        <activity android:name=".RegisterActivity" android:exported="true"/>
 
+        <activity
+            android:name=".MainActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".SpotifyActivity"
+            android:exported="true" />
 
     </application>
 

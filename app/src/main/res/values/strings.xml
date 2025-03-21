@@ -1,3 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MobilProje</string>
+    <string name="spotify_client_id">clinet-id-buraya</string>
+    <string name="spotify_client_secret">client-secret-buraya</string>
+    <string name="spotify_redirect_uri">http://localhost:3000</string>
 </resources>
